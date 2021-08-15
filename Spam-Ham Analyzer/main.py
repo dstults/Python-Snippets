@@ -1,23 +1,39 @@
 import pandas as pd
 
 # ===============================================================================
-# Get the Training Data
+# Customize your Usage Here
 # ===============================================================================
 
+# Note: The sample spam blog-post data included in this repository is too short
+#       to be of any use, you will need to acquire your own similar data for this
+#       to be of any value. It's just to demonstrate the format.
+
+# The path to the list of already-classified known spam and ham messages
+trainedData = 'sms-collection-training-short.txt'
+
+# The list of things you want to see if they are spam or not
+testData = 'sms-collection-test.txt'
+
+# ===============================================================================
+# Prepare the Training Data
+# ===============================================================================
+
+# TODO: This needs a try-catch or using for file not found / etc.
 def getSanitizedDataFromTrainingFile(fileName):
 	print("Loading Training File: " + fileName)
 	data = pd.read_csv(fileName, sep="\t", header=None)
 	data_clean = pd.DataFrame(data)
-	data_clean.columns = ['label', 'text']
-	data_clean['text'] = sanitizeText(data_clean['text'])
+	data_clean.columns = ['0label', '0text']
+	data_clean['0text'] = sanitizeText(data_clean['0text'])
 	return data_clean
 
+# TODO: This needs a try-catch or using for file not found / etc.
 def getTestFile(fileName):
 	print("Loading Test File: " + fileName)
 	data = pd.read_csv(fileName, sep="\t", header=None)
 	data_clean = pd.DataFrame(data)
-	data_clean.columns = ['text']
-	data_clean['text'] = sanitizeText(data_clean['text'])
+	data_clean.columns = ['0text']
+	data_clean['0text'] = sanitizeText(data_clean['0text'])
 	return data_clean
 
 def sanitizeText(text):
@@ -29,22 +45,11 @@ def sanitizeText(text):
 
 print('Commencing training file input process.')
 
-training_data = getSanitizedDataFromTrainingFile('SMSSpamCollection.short')
+trainingData = getSanitizedDataFromTrainingFile(trainedData)
 # TODO: Get it to append multiple files to the same massive training data clean var
 #training_data &= getSanitizedDataFromTrainingFile('SMSSpamCollection2.short')
 
 print('Training files loaded and sanitized.')
-
-
-# Old Code:
-# print(data_clean) # Debug
-# Previously, it would split the training data into two groups, this is no longer the desired behavior.
-# train_data = data_clean.sample(frac=0.8, random_state=1).reset_index(drop=True)
-# test_data = data_clean.drop(train_data.index).reset_index(drop=True) # drop everything from the index point which doesn't move from where it left off
-# train_data = train_data.reset_index(drop=True)
-# print(train_data)
-# print(test_data)
-
 
 # ===============================================================================
 # Train the Data
@@ -53,18 +58,18 @@ print('Training files loaded and sanitized.')
 print('Training the data, this might take a while...')
 
 # Create frequency table
-vocabulary = list(set(training_data['text'].sum()))
+vocabulary = list(set(trainingData['0text'].sum()))
 word_counts_per_sms = pd.DataFrame([
 	[row[1].count(word) for word in vocabulary]
-	for _, row in training_data.iterrows()], columns=vocabulary)
-training_data = pd.concat([training_data.reset_index(), word_counts_per_sms], axis=1).iloc[:,1:]
+	for _, row in trainingData.iterrows()], columns=vocabulary)
+trainingData = pd.concat([trainingData.reset_index(), word_counts_per_sms], axis=1).iloc[:,1:]
 # print(train_data.style)
 # print(tabulate(train_data, headers='keys', tablefmt='psql'))
-probabilityOfSpam = training_data['label'].value_counts()['spam'] / training_data.shape[0]
-probabilityOfHam = training_data['label'].value_counts()['ham'] / training_data.shape[0]
-numberSpam = training_data.loc[training_data['label'] == 'spam', 'text'].apply(len).sum()
-numberHam = training_data.loc[training_data['label'] == 'ham', 'text'].apply(len).sum()
-vocabularySize = len(training_data.columns) - 3
+probabilityOfSpam = trainingData['0label'].value_counts()['spam'] / trainingData.shape[0]
+probabilityOfHam = trainingData['0label'].value_counts()['ham'] / trainingData.shape[0]
+numberSpam = trainingData.loc[trainingData['0label'] == 'spam', '0text'].apply(len).sum()
+numberHam = trainingData.loc[trainingData['0label'] == 'ham', '0text'].apply(len).sum()
+vocabularySize = len(trainingData.columns) - 3
 # print(test_data)
 
 print('Data training complete.')
@@ -74,44 +79,56 @@ print('Data training complete.')
 # ===============================================================================
 
 def probabilityWordIsSpam(word):
-	# Alpha — the coefficient for the cases when a word in the message is absent in our dataset.
+	# alpha = priming coefficient for when no data or word
 	alpha = 1
-	if word in training_data.columns:
-		return (training_data.loc[training_data['label'] == 'spam', word].sum() + alpha) / (numberSpam + alpha * vocabularySize)
+	if word in trainingData.columns:
+		# BUG: this will throw an error if the "word" is the same as trainingData column names
+		#      needs further research to prevent: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html
+		return (trainingData.loc[trainingData['0label'] == 'spam', word].sum() + alpha) / (numberSpam + alpha * vocabularySize)
 	else:
 		return 1
 
 def probabilityWordIsHam(word):
-	# Alpha — the coefficient for the cases when a word in the message is absent in our dataset.
+	# alpha = priming coefficient for when no data or word
 	alpha = 1
-	if word in training_data.columns:
-		return (training_data.loc[training_data['label'] == 'ham', word].sum() + alpha) / (numberHam + alpha * vocabularySize)
+	if word in trainingData.columns:
+		# BUG: this will throw an error if the "word" is the same as trainingData column names
+		#      needs further research to prevent: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.loc.html
+		return (trainingData.loc[trainingData['0label'] == 'ham', word].sum() + alpha) / (numberHam + alpha * vocabularySize)
 	else:
 		return 1
 
-def classify(message):
-	p_spam_given_message = probabilityOfSpam
-	p_ham_given_message = probabilityOfHam
+def classifyAsSpamOrHam(message):
+	pSpamForMessage = probabilityOfSpam
+	pHamForMessage = probabilityOfHam
 	for word in message:
-		p_spam_given_message *= probabilityWordIsSpam(word)
-		p_ham_given_message *= probabilityWordIsHam(word)
-	if p_ham_given_message > p_spam_given_message:
+		try:
+			pSpamForMessage *= probabilityWordIsSpam(word)
+			pHamForMessage *= probabilityWordIsHam(word)
+		except:
+			print("Error classifying word:", word)
+			print("Error with message:", message)
+			exit()
+	if pHamForMessage > pSpamForMessage:
 		return 'ham'
-	elif p_ham_given_message < p_spam_given_message:
+	elif pHamForMessage < pSpamForMessage:
 		return 'spam'
 	else:
 		return 'needs human classification'
 
-def listToString(s):
-	return ' '.join(s)
+# For readability below
+def listToString(rowData):
+	return ' '.join(rowData)
 
 print('Getting real data to test against the trained data.')
 
-test_data = getTestFile('real_messages.txt')
+test_data = getTestFile(testData)
 
 print('Testing the trained data against the real data.')
 
 for _, row in test_data.iterrows():
-	print(classify(row['text']) + " | MSG: " + listToString(row['text']))
+	print(classifyAsSpamOrHam(row['0text']) + " | MSG: " + listToString(row['0text']))
 
-print('Program gracefully terminated.')
+# TODO: Output to somewhere for production purposes
+
+print('\nProgram gracefully terminated.\n')
