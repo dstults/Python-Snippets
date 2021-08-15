@@ -58,3 +58,6 @@ def writeIteration(isFirst, i, val):
 	if (not isFirst):
 		write(CGREY + " ... " + CEND)
 	write("[ (" + str(i + 1) + ") " + CYELLOW + val + CEND + " ]")
+
+def printYellow(importantText):
+	print(CYELLOW2 + importantText + CEND)
