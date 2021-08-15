@@ -4,8 +4,7 @@ from dUtilities import *
 title("Basic List Functions")
 # -------------------------------------------------------------
 
-# Most of this was copied directly from here:
-# https://dev.to/aumayeung/many-things-you-can-do-with-python-lists-you-may-have-missed-261p
+# Reference: https://dev.to/aumayeung/many-things-you-can-do-with-python-lists-you-may-have-missed-261p
 
 print("\nfruits = ['apple', 'orange', 'orange', 'grape', 'pear']")
 fruits = ['apple', 'orange', 'orange', 'grape', 'pear']
@@ -40,6 +39,16 @@ typeInfo("orange_count", orange_count)
 # -------------------------------------------------------------
 title("More Basic List Functions")
 # -------------------------------------------------------------
+
+print ("\nColon notation (':') with lists:")
+typeInfo("fruits[1:]", fruits[1:])
+typeInfo("fruits[:2]", fruits[:2])
+typeInfo("fruits[1:3]", fruits[1:3])
+typeInfo("fruits[:]", fruits[:])
+
+print ("\n 'in' :")
+typeInfo("'apple' in fruits", 'apple' in fruits)
+typeInfo("'grapefruit' in fruits", 'pear' in fruits)
 
 print("\nshallowCopy = fruits.copy()")
 shallowCopy = fruits.copy()
