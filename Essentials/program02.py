@@ -18,6 +18,10 @@ print("\nDivide by two...")
 typeInfo("1 / 2", 1 / 2)
 typeInfo("1.0 / 2", 1.0 / 2)
 
+printYellow("\n!! Force integer division: !!")
+typeInfo("10 / 3", 10 / 3)
+typeInfo("10 // 3", 10 // 3)
+
 print("\nModulo preserves float as float but expect errors...")
 typeInfo("17 % 5", 17 % 5)
 typeInfo("17.0 % 5", 17.0 % 5)
