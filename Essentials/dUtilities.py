@@ -59,5 +59,14 @@ def writeIteration(isFirst, i, val):
 		write(CGREY + " ... " + CEND)
 	write("[ (" + str(i + 1) + ") " + CYELLOW + val + CEND + " ]")
 
-def printYellow(importantText):
-	print(CYELLOW2 + importantText + CEND)
+def printYellow(text):
+	print(CYELLOW2 + text + CEND)
+
+def printRed(text):
+	print(CRED2 + text + CEND)
+
+def printWarning(errorText):
+	print(CYELLOW2 + CBOLD + "WARNING:" + CEND + " " + CYELLOW + errorText + CEND)
+
+def printError(errorText):
+	print(CRED2 + CBOLD + "ERROR:" + CEND + " " + CRED + errorText + CEND)
