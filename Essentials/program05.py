@@ -40,10 +40,29 @@ print("del hero['maxHp']")
 del hero['maxHp']
 typeInfo("hero", hero)
 
+# -------------------------------------------------------------
+title("Clearing and Handling Exceptions")
+# -------------------------------------------------------------
 
+print('\nClearing and Deleting the dictionary (works with other data types)')
+print("hero.clear()")
+hero.clear()
+typeInfo("hero", hero)
+print("del hero")
+del hero
+try:
+	typeInfo("hero", hero)
+except NameError:
+	printError("name 'hero' is not defined")
 
-
-
-
+apples = 12
+print("apples = 12")
+typeInfo("apples", apples)
+del apples
+print("del apples")
+try:
+	typeInfo("apples", apples)
+except NameError:
+	printError("name 'apples' is not defined")
 
 programEnd()
