@@ -18,8 +18,7 @@ def sumDigits(num):
 	while (num > 0):
 		sum += num % 10
 		#print('sum +' + str(num % 10) + ' = ' + str(sum))
-		num /= 10
-		num = int(num)
+		num //= 10
 
 	return sum
 
